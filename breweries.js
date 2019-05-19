@@ -1,10 +1,28 @@
 require('dotenv').config()
 const fetch = require('node-fetch');
 
+const assert = require('assert');
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
+function getPrompt() {
+  rl.question('Zipcode: ', (zip) => {
+  console.log( getZip(zip) );
+  getPrompt();
+});
+}
+getPrompt();
+
+let userInput = [];
+
+
+function getZip() {
 const baseURL = 'https://sandbox-api.brewerydb.com/v2/';
 
-    fetch(baseURL + 'locations/?key=' + process.env.KEY + '&postalCode=78758') //+ userInput) (Change this to where the user to input in a zipcode and breweries could pop up)
+    fetch(baseURL + 'locations/?key=' + process.env.KEY + '&postalCode=' + userInput) 
     .then(res => {
       if(!res.ok) {
         throw Error(res.statusText)
@@ -26,4 +44,4 @@ const baseURL = 'https://sandbox-api.brewerydb.com/v2/';
     })
 
     .catch(err => console.log(`Error,  ${err}`))
-  
+  }
