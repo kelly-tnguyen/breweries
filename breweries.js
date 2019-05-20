@@ -1,29 +1,52 @@
 require('dotenv').config()
 const fetch = require('node-fetch');
 
-
 const baseURL = 'https://sandbox-api.brewerydb.com/v2/';
 
-    fetch(baseURL + 'locations/?key=' + process.env.KEY + '&postalCode=78758') //+ userInput) (Change this to where the user to input in a zipcode and breweries could pop up)
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+function getPrompt() {
+  rl.question('Zipcode: ', (zip) => {
+    getBreweries(zip);
+});
+}
+
+const getBreweries = (zip) => {
+
+    fetch(baseURL + "locations/?key=" + process.env.KEY + "&postalCode=" + zip) 
     .then(res => {
       if(!res.ok) {
         throw Error(res.statusText)
       } return res.json()
     })
     .then(obj => {
-        const totalResults = obj.totalResults;
-        const data = obj.data[0]; //Make this more dynamic in case there are like 5 breweries around
+      const data = obj.data;
+        if (obj.totalResults === undefined) {
+          console.log("There are no breweries near this zipcode.");
+          getPrompt();
+        } else {
+          console.log('Total Results: ') + obj.totalResults;
+          console.log('');
+          printResults(data);
+        }
+      })
+      .catch(err => console.log(`Error,  ${err}`))
+    }
 
-        const breweryName = data.name;
-        const breweryAddress = data.streetAddress;
-        const breweryPhone = data.phone;
-
-        console.log(`There are ${totalResults} results in that zip code!`);
-        console.log(breweryName);
-        console.log(breweryAddress);
-        console.log(breweryPhone);
-
-    })
-
-    .catch(err => console.log(`Error,  ${err}`))
-  
+    const printResults = (brewery) => {
+      brewery.forEach(val => {
+        console.log(('Name: ') + val.name);
+        console.log(('Phone #: ') + val.phone);
+        console.log(('Website: ') + val.website);
+        console.log(('Address: ') + val.streetAddress);
+        console.log(' ');
+      });
+      getPrompt();
+    }
+    
+    getPrompt();
+    
